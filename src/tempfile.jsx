@@ -1,36 +1,32 @@
-// Import dependencies
+// eslint-disable-next-line
 import React, { useRef, useState, useEffect } from "react";
-import * as tf from "@tensorflow/tfjs";
-// 1. TODO - Import required model here
-// e.g. import * as tfmodel from "@tensorflow-models/tfmodel";
+// eslint-disable-next-line
+import * as tf from '../node_modules/@tensorflow/tfjs';
+import * as cocossd from '../node_modules/@tensorflow-models/coco-ssd'
 import Webcam from "react-webcam";
 import "./App.css";
-// 2. TODO - Import drawing utility here
-// e.g. import { drawRect } from "./utilities";
+import { drawRect } from "./utilities";
 
-function App() {
+export default function Detector() {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // Main function
+
+
+
   const runCoco = async () => {
-    // 3. TODO - Load network 
-    // e.g. const net = await cocossd.load();
-    
-    //  Loop and detect hands
+    let net = await cocossd.load()
     setInterval(() => {
       detect(net);
     }, 10);
   };
 
   const detect = async (net) => {
-    // Check data is available
     if (
       typeof webcamRef.current !== "undefined" &&
       webcamRef.current !== null &&
       webcamRef.current.video.readyState === 4
     ) {
-      // Get Video Properties
       const video = webcamRef.current.video;
       const videoWidth = webcamRef.current.video.videoWidth;
       const videoHeight = webcamRef.current.video.videoHeight;
@@ -43,14 +39,20 @@ function App() {
       canvasRef.current.width = videoWidth;
       canvasRef.current.height = videoHeight;
 
-      // 4. TODO - Make Detections
-      // e.g. const obj = await net.detect(video);
-
+      const obj = await net.detect(video);
+      
       // Draw mesh
       const ctx = canvasRef.current.getContext("2d");
 
       // 5. TODO - Update drawing utility
       // drawSomething(obj, ctx)  
+      
+      let verifyHighRate = obj.every(prediction => prediction['score'] > 0.87);
+      if(verifyHighRate){
+        console.log(obj)
+        drawRect(obj,ctx)
+      }
+      
     }
   };
 
@@ -70,7 +72,7 @@ function App() {
             right: 0,
             textAlign: "center",
             zindex: 9,
-            width: 640,
+            width: 500,
             height: 480,
           }}
         />
@@ -85,7 +87,7 @@ function App() {
             right: 0,
             textAlign: "center",
             zindex: 8,
-            width: 640,
+            width: 450,
             height: 480,
           }}
         />
@@ -93,5 +95,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
